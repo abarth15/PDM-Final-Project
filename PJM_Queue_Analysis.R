@@ -6,6 +6,7 @@ library(dplyr)
 library(tidyverse)
 library(readxl)
 library(httr)
+library(lubridate)
 
 # Read in PJMCycleProjects file
 
@@ -15,6 +16,15 @@ file <- tempfile(fileext = ".xlsx")
 download.file(url, file, mode = "wb")
 
 pjm_full_cycle <- read_excel(file)
+
+# Read in PJMActive Projects file
+
+url <- "https://github.com/abarth15/PDM-Final-Project/raw/main/PJMActiveProjects.xlsx"
+
+file <- tempfile(fileext = ".xlsx")
+download.file(url, file, mode = "wb")
+
+pjm_in_service <- read_excel(file)
 
 # Calculate fuel type as percentage of total projects in the queue
 
@@ -64,6 +74,23 @@ top_five_counties <- filter(pjm_full_cycle, Status == "Active" & Fuel %in%
   head(5)
 
 print(top_five_counties)
+
+# Calculate and graph average length of time that in-service projects spent
+# in the interconnection queue between 2014 and 2024 by fuel type
+
+time_in_queue <- pjm_in_service %>%
+  mutate(across(c(`Submitted Date`, `Actual In Service Date`), ~ 
+    as_date(mdy(.x)))) %>%
+  mutate(`Time In Queue` = interval(`Submitted Date`, `Actual In Service Date`)
+    / years(1))
+
+mean_time_fuel <- time_in_queue %>%
+  mutate(`In Service Year` = year(`Actual In Service Date`)) %>%
+  group_by(Fuel, `In Service Year`) %>%
+  summarize(AverageTime = mean(`Time In Queue`, na.rm = TRUE)) %>%
+  select(Fuel, `In Service Year`, AverageTime) %>%
+  filter(`In Service Year` >= 2014)
+    
 
 
 
