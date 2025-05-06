@@ -7,6 +7,7 @@ library(tidyverse)
 library(readxl)
 library(httr)
 library(lubridate)
+library(ggplot2)
 
 # Read in PJMCycleProjects file
 
@@ -89,7 +90,12 @@ mean_time_fuel <- time_in_queue %>%
   group_by(Fuel, `In Service Year`) %>%
   summarize(AverageTime = mean(`Time In Queue`, na.rm = TRUE)) %>%
   select(Fuel, `In Service Year`, AverageTime) %>%
-  filter(`In Service Year` >= 2014)
+  filter(`In Service Year` >= 2005 & Fuel %in% c("Solar", "Wind", "Storage", 
+    "Natural Gas", "Solar,Storage,Hybrid")) %>%
+  rename(, `Average Time In Queue` = AverageTime)
+
+ggplot(mean_time_fuel, aes(`In Service Year`, `Average Time In Queue`, 
+  color = Fuel)) + geom_line()
     
 
 
