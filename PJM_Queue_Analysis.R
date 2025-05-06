@@ -54,16 +54,16 @@ print(fuel_percentage_energy)
 # Calculate MW of energy in the queue per state and county and select top
 # five states and counties for solar, storage, wind, and hyrbid resources
 
-top_five_states <- filter(pjm_full_cycle, Status == "Active" & Fuel %in% 
+top_three_states <- filter(pjm_full_cycle, Status == "Active" & Fuel %in% 
     c("Solar", "Wind", "Storage", "Solar,Storage,Hybrid")) %>% 
   group_by(State) %>%
   summarize(TotalMW = sum(`MW Energy`, na.rm = TRUE)) %>%
   mutate(`Clean Energy MW` = TotalMW) %>%
   select(State, `Clean Energy MW`) %>%
   arrange(desc(`Clean Energy MW`)) %>%
-  head(5)
+  head(3)
 
-print(top_five_states)
+print(top_three_states)
 
 top_five_counties <- filter(pjm_full_cycle, Status == "Active" & Fuel %in% 
     c("Solar", "Wind", "Storage", "Solar,Storage,Hybrid")) %>% 
@@ -77,7 +77,7 @@ top_five_counties <- filter(pjm_full_cycle, Status == "Active" & Fuel %in%
 print(top_five_counties)
 
 # Calculate and graph average length of time that in-service projects spent
-# in the interconnection queue between 2014 and 2024 by fuel type
+# in the interconnection queue between 2005 and 2025 by fuel type
 
 time_in_queue <- pjm_in_service %>%
   mutate(across(c(`Submitted Date`, `Actual In Service Date`), ~ 
@@ -91,11 +91,26 @@ mean_time_fuel <- time_in_queue %>%
   summarize(AverageTime = mean(`Time In Queue`, na.rm = TRUE)) %>%
   select(Fuel, `In Service Year`, AverageTime) %>%
   filter(`In Service Year` >= 2005 & Fuel %in% c("Solar", "Wind", "Storage", 
-    "Natural Gas", "Solar,Storage,Hybrid")) %>%
+    "Natural Gas")) %>%
   rename(, `Average Time In Queue` = AverageTime)
 
-ggplot(mean_time_fuel, aes(`In Service Year`, `Average Time In Queue`, 
-  color = Fuel)) + geom_line()
+all_fuels <- mean_time_fuel %>%
+  group_by(`In Service Year`) %>%
+  summarize(`Average Time In Queue` = mean(`Average Time In Queue`,
+    na.rm = TRUE)) %>%
+  mutate(Fuel = "All Fuels")
+
+mean_time_all_fuel <- bind_rows(mean_time_fuel, all_fuels)
+
+ggplot(mean_time_all_fuel, aes(`In Service Year`, `Average Time In Queue`, 
+  color = Fuel)) + geom_line() +
+  scale_color_manual(values = c(
+    "Solar" = "yellow", 
+    "Wind" = "skyblue",
+    "Storage" = "green",
+    "Natural Gas" = "grey",
+    "All Fuels" = "black")) +
+  labs(title = "Interconnection Wait Times by Fuel and Year")
     
 
 
