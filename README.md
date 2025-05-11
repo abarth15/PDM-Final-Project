@@ -6,7 +6,8 @@ This project is an analysis of PJM queue data for a potential, hypothetical clie
 ## Files in This Repository
 - `Barth_Annika_ps4.qmd`: The main Quarto document with analysis and write-up.
 - `PJM_Queue_Analysis.R`: R script used to load and wrangle the data.
-- `PJMCycleProjects.xlsx` and `PJMActiveProjects.xlsx`: Excel datasets used in the analysis.
+- `PJMCycleProjects.xlsx`: Excel dataset with projects that are active in PJM's queue.
+- `PJMActiveProjects.xlsx`: Excel dataset with projects that have completed the interconnection process and are online.
 - `README.md`: This file.
 
 ## Data Sources
